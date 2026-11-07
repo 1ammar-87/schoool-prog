@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق إدارة المدرسة والأسئلة الامتحانية والمخاطبات الرسمية</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Tajawal) -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <!-- MathJax Library for Mathematical Equations rendering -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: { fontCache: 'global' },
+            startup: {
+                typeset: false
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            800: '#0c4a6e',
+                            900: '#0f172a',
+                        }
+                    },
+                    fontFamily: {
+                        tajawal: ['Tajawal', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        /* Custom Print Styles for A4 Paper */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            .print-container {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                background: white !important;
+            }
+            .print-page {
+                box-shadow: none !important;
+                border: none !important;
+                width: 100% !important;
+                padding: 10mm 15mm !important;
+                margin: 0 !important;
+                min-height: auto !important;
+                color: black !important;
+            }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* Pulse animation for Voice Input */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 0.4; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .mic-active {
+            animation: pulse-ring 1.5s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-tajawal antialiased selection:bg-sky-500 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-800/90 backdrop-blur border-b border-slate-700 sticky top-0 z-40 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/30">
+                    <i class="fa-solid fa-graduation-cap text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-white leading-tight">المساعد المدرسي المتكامل</h1>
+                    <p class="text-xs text-sky-400">صانع الأسئلة والرموز الرياضية والكتب الرسمية والجداول</p>
+                </div>
+            </div>
+
+            <!-- Tab Buttons -->
+            <div class="flex items-center gap-2 bg-slate-900/60 p-1 rounded-xl border border-slate-700">
+                <button id="tab-exam-btn" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 bg-sky-600 text-white shadow-md">
+                    <i class="fa-solid fa-calculator"></i>
+                    <span>أسئلة الامتحانات والرياضيات</span>
+                </button>
+                <button id="tab-official-btn" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200">
+                    <i class="fa-solid fa-file-signature"></i>
+                    <span>المخاطبات والجداول الإدارية</span>
+                </button>
+            </div>
+
+            <!-- Global Actions -->
+            <div class="flex items-center gap-3">
+                <button onclick="window.print()" class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-bold shadow-md shadow-emerald-900/30 transition-all">
+                    <i class="fa-solid fa-print"></i>
+                    <span class="hidden sm:inline">طباعة / تصدير PDF</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
+        
+        <!-- VOICE RECORDING STATUS OVERLAY NOTIFICATION -->
+        <div id="voice-toast" class="hidden fixed bottom-6 left-6 z-50 bg-rose-600 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-rose-400 mic-active">
+            <div class="w-3 h-3 rounded-full bg-white animate-ping"></div>
+            <i class="fa-solid fa-microphone text-lg"></i>
+            <div>
+                <p class="font-bold text-sm">جاري الاستماع الآن...</p>
+                <p class="text-xs text-rose-100" id="voice-toast-target">تكلم الآن لإضافة النص للحقل...</p>
+            </div>
+            <button id="stop-voice-btn" class="mr-3 text-xs bg-rose-800 hover:bg-rose-900 px-2.5 py-1 rounded">إلغاء</button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: EXAM QUESTIONS & MATH EDITOR       -->
+        <!-- ========================================== -->
+        <div id="section-exam" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left Side Controls (No-Print) -->
+            <div class="lg:col-span-5 flex flex-col gap-6 no-print">
+                
+                <!-- Math Toolbar Panel -->
+                <div class="bg-slate-800/90 border border-slate-700 rounded-2xl p-4 shadow-xl">
+                    <h3 class="text-xs font-bold text-sky-400 mb-2 flex items-center justify-between">
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-square-root-variable"></i> أدوات إدراج رموز الرياضيات والرياضيات العربية</span>
+                        <span class="text-[10px] text-slate-400">انقر لإدراج الرمز في الحقل النشط</span>
+                    </h3>
+                    <div class="grid grid-cols-4 sm:grid-cols-6 gap-1.5 text-center text-xs">
+                        <button type="button" data-symbol="$\sqrt{x}$" class="btn-math-sym bg-slate-900 hover:bg-sky-900 border border-slate-700 hover:border-sky-500 py-1.5 rounded text-sky-300 font-bold" title="جذر تربيعي">$\sqrt{x}$</button>
+                        <button type="button" data-symbol="$\sqrt[3]{x}$" class="btn-math-sym bg-slate-900 hover:bg-sky-900 border border-slate-700 hover:border-sky-500 py-1.5 rounded text-sky-300 font-bold" title="جذر تكعيبي">$\sqrt[3]{x}$</button>
+                        <button type="button" data-symbol="$\frac{a}{b}$" class="btn-math-sym bg-slate-900 hover:bg-sky-900 border border-slate-700 hover:border-sky-500 py-1.5 rounded text-sky-300 font-bold" title="كسر عادي">$\frac{a}{b}$</button>
+                        <button type="button" data-symbol="$x^2$" class="btn-math-sym bg-slate-900 hover:bg-sky-900 border border-slate-700 hover:border-sky-500 py-1.5 rounded text-sky-300 font-bold" title="أس تربيع">$x^2$</button>
+                        <button type="button" data-symbol="$x^n$" class="btn-math-sym bg-slate-900 hover:bg-sky-900 border border-slate-700 hover:border-sky-500 py-1.5 rounded text-sky-300 font-bold" title="أس متعدّد">$x^n$</button>
+                        <button type="button" data-symbol="$\int_{a}^{b} x dx$" class="btn-math-sym bg-slate-900 hover:bg-sky-900 border border-slate-700 hover:border-sky-500 py-1.5 rounded text-sky-300 font-bold" title="تكامل محدد">$\int$</button>
+                        <button type="button" data-symbol="$\sum_{i=1}^{n}$" class="btn-math-sym bg-slate-900 hover:bg-sky-900 border border-slate-700 hover:border-sky-500 py-1.5 rounded text-sky-300 font-bold" title="المجموع">$\sum$</button>
+                        <button type="button" data-symbol="$\lim_{x \to 0}$" class="btn-math-sym bg-slate-900 hover:bg-sky-900 border border-slate-700 hover:border-sky-500 py-1.5 rounded text-sky-300 font-bold" title="الغاية">$\lim$</button>
+                        <button type="button" data-symbol="$\pm$" class="btn-math-sym bg-slate-900 hover:bg-sky-900 border border-slate-700 hover:border-sky-500 py-1.5 rounded text-slate-200 font-bold">$\pm$</button>
+                        <button type="button" data-symbol="$\neq$" class="btn-math-sym bg-slate-900 hover:bg-sky-900 border border-slate-700 hover:border-sky-500 py-1.5 rounded text-slate-200 font-bold">$\neq$</button>
+                        <button type="button" data-symbol="$\leq$" class="btn-math-sym bg-slate-900 hover:bg-sky-900 border border-slate-700 hover:border-sky-500 py-1.5 rounded text-slate-200 font-bold">$\le$</button>
+                        <button type="button" data-symbol="$\geq$" class="btn-math-sym bg-slate-900 hover:bg-sky-900 border border-slate-700 hover:border-sky-500 py-1.5 rounded text-slate-200 font-bold">$\ge$</button>
+                        <button type="button" data-symbol="$\infty$" class="btn-math-sym bg-slate-900 hover:bg-sky-900 border border-slate-700 hover:border-sky-500 py-1.5 rounded text-slate-200 font-bold">$\infty$</button>
+                        <button type="button" data-symbol="$\pi$" class="btn-math-sym bg-slate-900 hover:bg-sky-900 border border-slate-700 hover:border-sky-500 py-1.5 rounded text-slate-200 font-bold">$\pi$</button>
+                        <button type="button" data-symbol="$\Delta$" class="btn-math-sym bg-slate-900 hover:bg-sky-900 border border-slate-700 hover:border-sky-500 py-1.5 rounded text-slate-200 font-bold">$\Delta$</button>
+                        <button type="button" data-symbol="$\theta$" class="btn-math-sym bg-slate-900 hover:bg-sky-900 border border-slate-700 hover:border-sky-500 py-1.5 rounded text-slate-200 font-bold">$\theta$</button>
+                        <button type="button" data-symbol="س" class="btn-math-sym bg-slate-900 hover:bg-amber-900 border border-slate-700 hover:border-amber-500 py-1.5 rounded text-amber-300 font-bold">س</button>
+                        <button type="button" data-symbol="ص" class="btn-math-sym bg-slate-900 hover:bg-amber-900 border border-slate-700 hover:border-amber-500 py-1.5 rounded text-amber-300 font-bold">ص</button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/90 border border-slate-700 rounded-2xl p-5 shadow-xl">
+                    <h2 class="text-base font-bold text-sky-400 border-b border-slate-700 pb-3 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>معلومات الترويسة الامتحانية</span>
+                    </h2>
+
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block text-xs text-slate-400 mb-1">اسم المدرسة</label>
+                            <div class="relative">
+                                <input type="text" id="ex-school" value="ثانوية الأمل للمتفوقين" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500 pl-8 text-xs">
+                                <button type="button" onclick="startVoiceFor('ex-school', 'اسم المدرسة')" class="absolute left-2 top-2 text-slate-400 hover:text-sky-400" title="إدخال صوتي"><i class="fa-solid fa-microphone"></i></button>
+                            </div>
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block text-xs text-slate-400 mb-1">المادة الدراسية</label>
+                            <div class="relative">
+                                <input type="text" id="ex-subject" value="الرياضيات" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500 pl-8 text-xs">
+                                <button type="button" onclick="startVoiceFor('ex-subject', 'المادة الدراسية')" class="absolute left-2 top-2 text-slate-400 hover:text-sky-400" title="إدخال صوتي"><i class="fa-solid fa-microphone"></i></button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">الصف / المرحلة</label>
+                            <input type="text" id="ex-grade" value="الثالث المتوسط" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500 text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">نوع الامتحان / الدور</label>
+                            <select id="ex-type" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500 text-xs">
+                                <option value="امتحان الشهر الأول">امتحان الشهر الأول</option>
+                                <option value="امتحان الشهر الثاني">امتحان الشهر الثاني</option>
+                                <option value="امتحان نصف السنة">امتحان نصف السنة</option>
+                                <option value="الامتحان النهائي - الدور الأول" selected>الامتحان النهائي - الدور الأول</option>
+                                <option value="الامتحان النهائي - الدور الثاني">الامتحان النهائي - الدور الثاني</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">السنة الدراسية</label>
+                            <input type="text" id="ex-year" value="2025 - 2026" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500 text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">الزمن المخصص</label>
+                            <input type="text" id="ex-time" value="ساعتان" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500 text-xs">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs text-slate-400 mb-1">ملاحظة عامة (أعلى الأسئلة)</label>
+                            <div class="relative">
+                                <input type="text" id="ex-note" value="ملاحظة: الإجابة عن جميع الأسئلة مع التمنيات بالتوفيق والنجاح" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500 pl-8 text-xs">
+                                <button type="button" onclick="startVoiceFor('ex-note', 'الملاحظة العامة')" class="absolute left-2 top-2 text-slate-400 hover:text-sky-400" title="إدخال صوتي"><i class="fa-solid fa-microphone"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Questions Manager -->
+                <div class="bg-slate-800/90 border border-slate-700 rounded-2xl p-5 shadow-xl">
+                    <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-4">
+                        <h2 class="text-base font-bold text-sky-400 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check"></i>
+                            <span>إدارة الأسئلة والفروع والدرجات</span>
+                        </h2>
+                        <button id="add-q-btn" class="bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition">
+                            <i class="fa-solid fa-plus"></i> إضافة سؤال جديد
+                        </button>
+                    </div>
+
+                    <div id="questions-edit-list" class="flex flex-col gap-4 max-h-[550px] overflow-y-auto pr-1">
+                        <!-- Dynamic Question Inputs populated via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side Live Preview Container -->
+            <div class="lg:col-span-7 print-container">
+                <!-- Outer Paper Wrapper (Simulating A4) -->
+                <div class="bg-white text-black p-8 rounded-2xl shadow-2xl print-page border border-slate-300 min-h-[900px] flex flex-col justify-between" id="exam-paper">
+                    <div>
+                        <!-- Official Exam Header Grid -->
+                        <div class="border-b-2 border-black pb-4 mb-4">
+                            <div class="flex justify-between items-center text-center font-bold text-sm md:text-base leading-snug">
+                                <div class="w-1/3 text-right">
+                                    <p>جمهورية العراق</p>
+                                    <p>وزارة التربية</p>
+                                    <p id="pv-ex-school" class="text-base md:text-lg font-extrabold mt-1">ثانوية الأمل للمتفوقين</p>
+                                </div>
+                                <div class="w-1/3 flex flex-col items-center">
+                                    <div class="w-12 h-12 border-2 border-black rounded-full flex items-center justify-center p-1 mb-1">
+                                        <i class="fa-solid fa-book-bookmark text-xl text-slate-800"></i>
+                                    </div>
+                                    <span id="pv-ex-type" class="bg-slate-100 text-black px-2 py-0.5 border border-black text-xs font-black">الامتحان النهائي - الدور الأول</span>
+                                </div>
+                                <div class="w-1/3 text-left">
+                                    <p>المادة: <span id="pv-ex-subject" class="font-black">الرياضيات</span></p>
+                                    <p>الصف: <span id="pv-ex-grade">الثالث المتوسط</span></p>
+                                    <p>الزمن: <span id="pv-ex-time">ساعتان</span></p>
+                                    <p>العام الدراسي: <span id="pv-ex-year">2025 - 2026</span></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Top Note & Instructions -->
+                        <div class="flex justify-between items-center font-bold text-xs md:text-sm border-b border-dashed border-slate-400 pb-2 mb-4">
+                            <span id="pv-ex-note" class="italic">ملاحظة: الإجابة عن جميع الأسئلة مع التمنيات بالتوفيق والنجاح</span>
+                            <span class="font-extrabold" id="pv-total-marks">ملاحظة: الدرجة الكلية (100)</span>
+                        </div>
+
+                        <!-- Questions Rendered Output -->
+                        <div id="pv-questions-container" class="space-y-5 text-sm md:text-base">
+                            <!-- Dynamic Content Rendered via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Footer Signatures -->
+                    <div class="mt-12 pt-6 border-t border-slate-300">
+                        <div class="flex justify-between items-end text-center font-bold text-sm">
+                            <div class="w-1/2">
+                                <p class="mb-8">مدرس / مدرسة المادة</p>
+                                <p class="text-xs text-slate-500">التوقيع: ............................</p>
+                            </div>
+                            <div class="w-1/2">
+                                <p class="mb-8">مدير المدرسة / رئيس اللجنة الامتحانية</p>
+                                <p class="text-xs text-slate-500">التوقيع: ............................</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: OFFICIAL CORRESPONDENCE & TABLES    -->
+        <!-- ========================================== -->
+        <div id="section-official" class="hidden grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Form Controls Side -->
+            <div class="lg:col-span-5 flex flex-col gap-6 no-print">
+                <div class="bg-slate-800/90 border border-slate-700 rounded-2xl p-5 shadow-xl">
+                    <h2 class="text-base font-bold text-emerald-400 border-b border-slate-700 pb-3 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-file-contract"></i>
+                        <span>نوع وتصنيف المخاطبة الإدارية</span>
+                    </h2>
+
+                    <!-- Template Selector -->
+                    <div class="mb-4">
+                        <label class="block text-xs text-slate-400 mb-1">اختر نوع النموذج الرسمي</label>
+                        <select id="off-template" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-bold focus:outline-none focus:border-emerald-500 text-sm">
+                            <option value="mubashara">1. كتاب مباشرة (معلم / موظف)</option>
+                            <option value="infikak">2. كتاب انفكاك (معلم / موظف)</option>
+                            <option value="taeed_grades">3. تأييد استمرار وشهادة درجات طالب (مع جدول الدرجات)</option>
+                            <option value="seha">4. كتاب صحة صدور (وثيقة / كتاب)</option>
+                            <option value="shukr">5. كتاب شكر وتقدير رسمي</option>
+                            <option value="inthan">6. استدعاء ولي أمر / إنذار غيابات</option>
+                            <option value="amr_edari">7. أمر إداري مدرسي (تشكيل لجنة / تكليفات)</option>
+                            <option value="general_letter">8. مخاطبة إدارية عامة موجهة</option>
+                        </select>
+                    </div>
+
+                    <!-- Dynamic Form Controls -->
+                    <div class="space-y-3 text-sm" id="official-form-fields">
+                        <!-- Rendered dynamically depending on template selection -->
+                    </div>
+
+                    <!-- Dynamic Table Editor Section for Letters -->
+                    <div class="mt-6 border-t border-slate-700 pt-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="flex items-center gap-2 text-xs font-bold text-emerald-400 cursor-pointer">
+                                <input type="checkbox" id="off-enable-table" class="rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0">
+                                <span>إدراج جدول بيانات مخصص داخل المستند</span>
+                            </label>
+                        </div>
+
+                        <div id="off-table-controls" class="hidden space-y-3 bg-slate-900/60 p-3 rounded-xl border border-slate-700">
+                            <div class="flex items-center gap-2">
+                                <button id="btn-add-table-row" class="bg-emerald-700 hover:bg-emerald-600 text-white text-xs px-2.5 py-1 rounded font-bold flex items-center gap-1">
+                                    <i class="fa-solid fa-plus text-[10px]"></i> إضافة صف
+                                </button>
+                                <button id="btn-add-table-col" class="bg-slate-700 hover:bg-slate-600 text-white text-xs px-2.5 py-1 rounded font-bold flex items-center gap-1">
+                                    <i class="fa-solid fa-plus text-[10px]"></i> إضافة عمود
+                                </button>
+                                <button id="btn-reset-table" class="text-xs text-rose-400 hover:underline mr-auto">إعادة ضبط</button>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-xs text-white border-collapse" id="off-table-editor">
+                                    <!-- Editable dynamic table controls -->
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview Document Side -->
+            <div class="lg:col-span-7 print-container">
+                <div class="bg-white text-black p-10 rounded-2xl shadow-2xl print-page border border-slate-300 min-h-[900px] flex flex-col justify-between" id="official-paper">
+                    <div>
+                        <!-- Header Document Banner -->
+                        <div class="border-b-2 border-black pb-4 mb-6">
+                            <div class="flex justify-between items-center text-center font-bold text-sm">
+                                <div class="w-1/3 text-right">
+                                    <p class="font-extrabold text-base">جمهورية العراق</p>
+                                    <p>وزارة التربية</p>
+                                    <p id="pv-off-dept">المديرية العامة لتربية المحافظة</p>
+                                    <p id="pv-off-school-name" class="font-extrabold text-slate-800">ثانوية الأمل للمتفوقين</p>
+                                </div>
+                                <div class="w-1/3 flex flex-col items-center">
+                                    <svg class="w-14 h-14 text-slate-800" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                                    </svg>
+                                </div>
+                                <div class="w-1/3 text-left leading-relaxed">
+                                    <p>العدد: <span id="pv-off-num" class="font-mono font-bold">123 / 2026</span></p>
+                                    <p>التاريخ: <span id="pv-off-date" class="font-mono font-bold">2026 / 05 / 15</span></p>
+                                    <p>المرفقات: <span id="pv-off-attach">لا يوجد</span></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Document Title Header -->
+                        <div class="text-center my-6">
+                            <h2 id="pv-off-title" class="text-2xl font-black underline underline-offset-8 text-black">كتاب مباشرة</h2>
+                        </div>
+
+                        <!-- Target Destination -->
+                        <div class="font-bold text-base md:text-lg mb-4">
+                            إلى: <span id="pv-off-target" class="font-extrabold border-b border-black pb-0.5">المديرية العامة لتربية المحافظة / قسم الشؤون الإدارية</span>
+                        </div>
+
+                        <!-- Main Body Content -->
+                        <div id="pv-off-body" class="text-base md:text-lg font-medium leading-loose text-justify text-slate-900 indent-8 mb-6 space-y-4">
+                            <!-- Populated Dynamically -->
+                        </div>
+
+                        <!-- Dynamic Table Output Container -->
+                        <div id="pv-off-table-container" class="my-6 hidden">
+                            <table class="w-full border-collapse border-2 border-black text-center text-sm font-bold" id="pv-off-table">
+                                <!-- Populated dynamically -->
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Document Footer & Manager Signature -->
+                    <div class="mt-8">
+                        <div class="flex justify-end text-center font-bold text-sm md:text-base pr-8">
+                            <div class="w-1/2">
+                                <p class="font-extrabold text-lg" id="pv-off-sign-title">مدير المدرسة</p>
+                                <p class="mt-1 text-slate-700" id="pv-off-sign-name">أ. أحمد الفاضل</p>
+                                <p class="mt-8 text-xs text-slate-400">التوقيع والخاتم الرسمي</p>
+                            </div>
+                        </div>
+
+                        <!-- Copies / Margin Note -->
+                        <div class="mt-8 pt-4 border-t border-slate-300 text-xs text-slate-600 font-bold space-y-1" id="pv-off-copies">
+                            <p>صورة منه إلى:</p>
+                            <p>- الملف الشخصي / الحفظ العامة.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- App Engine JavaScript -->
+    <script>
+        // Active Text Input Tracking for Math Symbols Insertion
+        let activeInputEl = null;
+
+        document.addEventListener('focusin', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                activeInputEl = e.target;
+            }
+        });
+
+        // Math symbol insert handler
+        function insertMathSymbol(symbol) {
+            if (!activeInputEl) {
+                // If no input currently focused, fallback to first question input
+                activeInputEl = document.querySelector('#questions-edit-list input[type="text"]');
+            }
+            if (!activeInputEl) return;
+
+            const start = activeInputEl.selectionStart || 0;
+            const end = activeInputEl.selectionEnd || 0;
+            const val = activeInputEl.value;
+            
+            activeInputEl.value = val.substring(0, start) + symbol + val.substring(end);
+            activeInputEl.selectionStart = activeInputEl.selectionEnd = start + symbol.length;
+            activeInputEl.focus();
+            
+            // Dispatch input event to refresh preview
+            activeInputEl.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        // ==========================================
+        // STATE MANAGEMENT FOR EXAM QUESTIONS
+        // ==========================================
+        let questionsData = [
+            {
+                id: 1,
+                title: "السؤال الأول: جد قيمة التكامل والتمثيل البياني",
+                marks: 20,
+                branchType: "two", // 'none', 'two' (أ,ب), 'three' (أ,ب,ج)
+                branches: [
+                    { label: "أ", text: "احسب قيمة التكامل الآتي: $\\int_{0}^{2} (x^2 + 3x - 1) dx$", marks: 10 },
+                    { label: "ب", text: "جد قيمة $x$ التي تحقق المعادلة التالية: $\\sqrt{x+5} = x - 1$", marks: 10 }
+                ]
+            },
+            {
+                id: 2,
+                title: "السؤال الثاني: الهندسة والتفاضل",
+                marks: 20,
+                branchType: "three",
+                branches: [
+                    { label: "أ", text: "إذا كان $f(x) = \\frac{x^2 - 4}{x - 2}$، جد $\\lim_{x \\to 2} f(x)$.", marks: 7 },
+                    { label: "ب", text: "برهن أن مجموع زوايا المثلث تساوي $180^\\circ$.", marks: 7 },
+                    { label: "جـ", text: "بسط المقدار التالي بأبسط صورة: $\\frac{x^3 + 8}{x^2 - 2x + 4}$", marks: 6 }
+                ]
+            },
+            {
+                id: 3,
+                title: "السؤال الثالث: فيزياء / تطبيقات رياضية",
+                marks: 20,
+                branchType: "none",
+                branches: [
+                    { label: "مباشر", text: "سقط جسم من ارتفاع $h = 45m$ عن سطح الأرض. احسب زمن الوصول للأرض وسرعة اللحظة الأخيرة بفرض أن $g = 10m/s^2$.", marks: 20 }
+                ]
+            }
+        ];
+
+        let currentVoiceInputId = null;
+        let recognition = null;
+
+        // Initialize Web Speech API
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'ar-SA';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                if (currentVoiceInputId) {
+                    const inputElem = document.getElementById(currentVoiceInputId);
+                    if (inputElem) {
+                        inputElem.value = inputElem.value ? `${inputElem.value} ${transcript}` : transcript;
+                        inputElem.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                }
+                stopVoiceRecognition();
+            };
+
+            recognition.onerror = function() { stopVoiceRecognition(); };
+            recognition.onend = function() { stopVoiceRecognition(); };
+        }
+
+        function startVoiceFor(fieldId, labelName) {
+            if (!recognition) {
+                alert("خاصية الصوت غير مدعومة مباشرة في متصفحك الحالي، يمكنك الكتابة يدوياً.");
+                return;
+            }
+            currentVoiceInputId = fieldId;
+            document.getElementById('voice-toast-target').innerText = `تكلم لملء: [${labelName}]`;
+            document.getElementById('voice-toast').classList.remove('hidden');
+            try { recognition.start(); } catch(e){}
+        }
+
+        function stopVoiceRecognition() {
+            if (recognition) { try { recognition.stop(); } catch(e){} }
+            document.getElementById('voice-toast').classList.add('hidden');
+            currentVoiceInputId = null;
+        }
+
+        // Switch Tabs
+        function switchTab(tab) {
+            const examSec = document.getElementById('section-exam');
+            const offSec = document.getElementById('section-official');
+            const examBtn = document.getElementById('tab-exam-btn');
+            const offBtn = document.getElementById('tab-official-btn');
+
+            if (tab === 'exam') {
+                examSec.classList.remove('hidden');
+                examSec.classList.add('grid');
+                offSec.classList.add('hidden');
+                offSec.classList.remove('grid');
+
+                examBtn.className = "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 bg-sky-600 text-white shadow-md";
+                offBtn.className = "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200";
+            } else {
+                offSec.classList.remove('hidden');
+                offSec.classList.add('grid');
+                examSec.classList.add('hidden');
+                examSec.classList.remove('grid');
+
+                offBtn.className = "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 bg-emerald-600 text-white shadow-md";
+                examBtn.className = "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200";
+            }
+        }
+
+        // ==========================================
+        // EXAM QUESTIONS RENDER & CONTROLS
+        // ==========================================
+        function renderQuestionsEditList() {
+            const list = document.getElementById('questions-edit-list');
+            list.innerHTML = '';
+
+            questionsData.forEach((q) => {
+                const qBox = document.createElement('div');
+                qBox.className = "bg-slate-900 border border-slate-700 rounded-xl p-3 space-y-3";
+
+                let branchesInputsHTML = '';
+                if (q.branchType !== 'none') {
+                    q.branches.forEach((b, bIndex) => {
+                        branchesInputsHTML += `
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-sky-400 bg-slate-800 px-2 py-1 rounded">فرع ${b.label}</span>
+                                <div class="relative flex-1">
+                                    <input type="text" value="${b.text}" oninput="updateBranchText(${q.id}, ${bIndex}, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-sky-500 pl-7" id="input_q_${q.id}_b_${bIndex}">
+                                    <button type="button" onclick="startVoiceFor('input_q_${q.id}_b_${bIndex}', 'فرع ${b.label}')" class="absolute left-1.5 top-1 text-slate-400 hover:text-sky-400 text-xs" title="صوت"><i class="fa-solid fa-microphone"></i></button>
+                                </div>
+                                <div class="w-16">
+                                    <input type="number" value="${b.marks}" oninput="updateBranchMarks(${q.id}, ${bIndex}, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded px-1.5 py-1 text-xs text-white text-center focus:outline-none" title="درجة الفرع">
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    branchesInputsHTML = `
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-emerald-400 bg-slate-800 px-2 py-1 rounded">نص السؤال المباشر</span>
+                            <div class="relative flex-1">
+                                <input type="text" value="${q.branches[0].text}" oninput="updateBranchText(${q.id}, 0, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-sky-500 pl-7" id="input_q_${q.id}_direct">
+                                <button type="button" onclick="startVoiceFor('input_q_${q.id}_direct', 'نص السؤال المباشر')" class="absolute left-1.5 top-1 text-slate-400 hover:text-sky-400 text-xs"><i class="fa-solid fa-microphone"></i></button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                qBox.innerHTML = `
+                    <div class="flex items-center justify-between gap-2 border-b border-slate-800 pb-2">
+                        <div class="flex-1 relative">
+                            <input type="text" value="${q.title}" oninput="updateQuestionTitle(${q.id}, this.value)" class="w-full bg-slate-800 font-bold border border-slate-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-sky-500 pl-7" id="input_q_title_${q.id}">
+                            <button type="button" onclick="startVoiceFor('input_q_title_${q.id}', 'عنوان السؤال')" class="absolute left-1.5 top-1 text-slate-400 hover:text-sky-400 text-xs"><i class="fa-solid fa-microphone"></i></button>
+                        </div>
+                        <div class="w-20">
+                            <input type="number" value="${q.marks}" oninput="updateQuestionMarks(${q.id}, this.value)" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-white text-center focus:outline-none" title="الدرجة الكلية للسؤال">
+                        </div>
+                        <button onclick="deleteQuestion(${q.id})" class="text-rose-500 hover:text-rose-400 text-xs p-1" title="حذف السؤال"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs text-slate-400 bg-slate-950/40 p-1.5 rounded">
+                        <span>نوع الفرع والهيكلية:</span>
+                        <select onchange="changeQuestionBranchType(${q.id}, this.value)" class="bg-slate-800 border border-slate-700 text-white text-xs rounded px-2 py-0.5 focus:outline-none">
+                            <option value="none" ${q.branchType === 'none' ? 'selected' : ''}>سؤال مباشر (بدون فروع)</option>
+                            <option value="two" ${q.branchType === 'two' ? 'selected' : ''}>فرعان (أ ، ب)</option>
+                            <option value="three" ${q.branchType === 'three' ? 'selected' : ''}>ثلاثة فروع (أ ، ب ، جـ)</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-2 pr-2 border-r border-slate-800">
+                        ${branchesInputsHTML}
+                    </div>
+                `;
+
+                list.appendChild(qBox);
+            });
+        }
+
+        function renderExam() {
+            // Header Info Update
+            document.getElementById('pv-ex-school').innerText = document.getElementById('ex-school').value || 'اسم المدرسة';
+            document.getElementById('pv-ex-subject').innerText = document.getElementById('ex-subject').value || 'المادة';
+            document.getElementById('pv-ex-grade').innerText = document.getElementById('ex-grade').value || 'الصف';
+            document.getElementById('pv-ex-type').innerText = document.getElementById('ex-type').value;
+            document.getElementById('pv-ex-year').innerText = document.getElementById('ex-year').value;
+            document.getElementById('pv-ex-time').innerText = document.getElementById('ex-time').value;
+            document.getElementById('pv-ex-note').innerText = document.getElementById('ex-note').value;
+
+            // Compute Total Marks
+            let total = questionsData.reduce((acc, curr) => acc + (parseInt(curr.marks) || 0), 0);
+            document.getElementById('pv-total-marks').innerText = `ملاحظة: الدرجة الكلية (${total})`;
+
+            // Render Questions Preview
+            const container = document.getElementById('pv-questions-container');
+            container.innerHTML = '';
+
+            questionsData.forEach((q) => {
+                const qDiv = document.createElement('div');
+                qDiv.className = 'border-b border-slate-200 pb-3 last:border-none';
+
+                let branchesPV = '';
+                if (q.branchType !== 'none') {
+                    q.branches.forEach((b) => {
+                        branchesPV += `
+                            <div class="flex items-start justify-between gap-2 my-2 pr-3">
+                                <div class="flex items-start gap-2">
+                                    <span class="font-bold text-slate-900">${b.label})</span>
+                                    <div class="text-slate-800 leading-relaxed">${b.text}</div>
+                                </div>
+                                <span class="text-xs text-slate-500 font-bold whitespace-nowrap">(${b.marks} درجات)</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    branchesPV = `
+                        <div class="pr-3 my-2 text-slate-800 leading-relaxed">
+                            ${q.branches[0].text}
+                        </div>
+                    `;
+                }
+
+                qDiv.innerHTML = `
+                    <div class="flex justify-between items-baseline font-bold text-black mb-1">
+                        <span class="text-base md:text-lg">${q.title}</span>
+                        <span class="text-xs md:text-sm text-slate-700 bg-slate-100 px-2 py-0.5 border border-slate-300 rounded">(${q.marks} درجة)</span>
+                    </div>
+                    <div>
+                        ${branchesPV}
+                    </div>
+                `;
+                container.appendChild(qDiv);
+            });
+
+            // Trigger MathJax safely
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise([container]).catch((err) => console.log(err));
+            }
+        }
+
+        // Questions Array Manipulations
+        function addQuestion() {
+            const newId = Date.now();
+            questionsData.push({
+                id: newId,
+                title: `السؤال ${questionsData.length + 1}:`,
+                marks: 20,
+                branchType: "two",
+                branches: [
+                    { label: "أ", text: "اكتب نص الفرع الأول هنا...", marks: 10 },
+                    { label: "ب", text: "اكتب نص الفرع الثاني هنا...", marks: 10 }
+                ]
+            });
+            renderQuestionsEditList();
+            renderExam();
+        }
+
+        function deleteQuestion(qId) {
+            questionsData = questionsData.filter(q => q.id !== qId);
+            renderQuestionsEditList();
+            renderExam();
+        }
+
+        function updateQuestionTitle(qId, val) {
+            const q = questionsData.find(q => q.id === qId);
+            if (q) { q.title = val; renderExam(); }
+        }
+
+        function updateQuestionMarks(qId, val) {
+            const q = questionsData.find(q => q.id === qId);
+            if (q) { q.marks = val; renderExam(); }
+        }
+
+        function changeQuestionBranchType(qId, type) {
+            const q = questionsData.find(q => q.id === qId);
+            if (!q) return;
+            q.branchType = type;
+
+            if (type === 'none') {
+                q.branches = [{ label: "مباشر", text: "نص السؤال المباشر...", marks: q.marks }];
+            } else if (type === 'two') {
+                const half = Math.floor(q.marks / 2);
+                q.branches = [
+                    { label: "أ", text: "نص الفرع (أ)...", marks: half },
+                    { label: "ب", text: "نص الفرع (ب)...", marks: q.marks - half }
+                ];
+            } else if (type === 'three') {
+                const third = Math.floor(q.marks / 3);
+                q.branches = [
+                    { label: "أ", text: "نص الفرع (أ)...", marks: third },
+                    { label: "ب", text: "نص الفرع (ب)...", marks: third },
+                    { label: "جـ", text: "نص الفرع (جـ)...", marks: q.marks - (third * 2) }
+                ];
+            }
+            renderQuestionsEditList();
+            renderExam();
+        }
+
+        function updateBranchText(qId, bIndex, val) {
+            const q = questionsData.find(q => q.id === qId);
+            if (q && q.branches[bIndex]) {
+                q.branches[bIndex].text = val;
+                renderExam();
+            }
+        }
+
+        function updateBranchMarks(qId, bIndex, val) {
+            const q = questionsData.find(q => q.id === qId);
+            if (q && q.branches[bIndex]) {
+                q.branches[bIndex].marks = val;
+                renderExam();
+            }
+        }
+
+        // ==========================================
+        // OFFICIAL CORRESPONDENCE SYSTEM
+        // ==========================================
+        let tableData = {
+            headers: ["ت", "اسم المادة", "درجة الشهر الأول", "درجة نصف السنة", "النتيجة"],
+            rows: [
+                ["1", "التربية الإسلامية", "95", "98", "ممتاز"],
+                ["2", "اللغة العربية", "88", "90", "جيد جداً"],
+                ["3", "الرياضيات", "92", "94", "ممتاز"],
+                ["4", "العلوم العامة", "85", "89", "جيد جداً"]
+            ]
+        };
+
+        const officialTemplates = {
+            mubashara: {
+                title: "كتاب مباشرة موظف",
+                target: "المديرية العامة لتربية المحافظة / قسم الشؤون الإدارية",
+                hasTable: false,
+                fields: [
+                    { id: "dept", label: "اسم مديرية التربية", default: "المديرية العامة لتربية المحافظة" },
+                    { id: "school", label: "اسم المدرسة", default: "ثانوية الأمل للمتفوقين" },
+                    { id: "num", label: "العدد (الرقم الإداري)", default: "142 / 2026" },
+                    { id: "date", label: "التاريخ", default: "2026-05-15" },
+                    { id: "name", label: "اسم الموظف / المعلم الثلاثي", default: "محمد عبد الله علي" },
+                    { id: "job", label: "العنوان الوظيفي / المادة", default: "مدرس مادة الرياضيات" },
+                    { id: "order_num", label: "رقم الأمر الإداري بالتعيين/الإنفكاك", default: "أ/4521" },
+                    { id: "order_date", label: "تاريخ الأمر الإداري", default: "2026-05-01" },
+                    { id: "start_date", label: "تاريخ المباشرة الفعلية", default: "2026-05-15" },
+                    { id: "sign_name", label: "اسم مدير المدرسة", default: "أ. أحمد الفاضل" }
+                ],
+                bodyBuilder: (data) => `
+                    نحيطكم علماً بأن السيد/السيدة <span class="font-extrabold border-b border-black">${data.name}</span>، المنسوب إلينا بعنوان وظيفي (<span class="font-extrabold">${data.job}</span>)، بموجب الأمر الإداري ذي العدد (<span class="font-bold">${data.order_num}</span>) والمؤرخ في (<span class="font-bold">${data.order_date}</span>)، قد <strong>باشر مهام عمله الوظيفي والمدرسي رسمياً</strong> في مدرستنا اعتباراً من تاريخ (<span class="font-extrabold border-b border-black">${data.start_date}</span>).
+                    <br><br>
+                    تم إعلامكم بذلك للتفضل بالاطلاع واتخاذ ما يلزم من إجراءات إدارية ومالية بحقه... مع التقدير.
+                `
+            },
+            infikak: {
+                title: "كتاب انفكاك موظف",
+                target: "إدارة مدرسة / قسم الشؤون الإدارية والمالية",
+                hasTable: false,
+                fields: [
+                    { id: "dept", label: "اسم مديرية التربية", default: "المديرية العامة لتربية المحافظة" },
+                    { id: "school", label: "اسم المدرسة الحالي", default: "ثانوية الأمل للمتفوقين" },
+                    { id: "num", label: "العدد (الرقم الإداري)", default: "189 / 2026" },
+                    { id: "date", label: "التاريخ", default: "2026-05-15" },
+                    { id: "name", label: "اسم الموظف / المعلم", default: "خالد سعيد محمود" },
+                    { id: "job", label: "الوظيفة / التخصص", default: "مدرس مادة الكيمياء" },
+                    { id: "destination", label: "جهة الانفكاك / المدرسة المنقول إليها", default: "ثانوية المتفوقين الثانية" },
+                    { id: "order_num", label: "رقم كتاب النقل / الوزاري", default: "ن/7841" },
+                    { id: "order_date", label: "تاريخ كتاب النقل", default: "2026-04-20" },
+                    { id: "end_date", label: "تاريخ الانفكاك النهائي", default: "2026-05-15" },
+                    { id: "sign_name", label: "اسم مدير المدرسة", default: "أ. أحمد الفاضل" }
+                ],
+                bodyBuilder: (data) => `
+                    نود إعلامكم بأن السيد/السيدة <span class="font-extrabold border-b border-black">${data.name}</span>، المدرس/الموظف بعنوان (<span class="font-extrabold">${data.job}</span>)، قد <strong>انفك عن العمل رسمياً</strong> من مدرستنا بنهاية الدوام الرسمي ليوم (<span class="font-extrabold border-b border-black">${data.end_date}</span>)، وذلك استناداً إلى كتاب النقل/الأمر الإداري ذي العدد (<span class="font-bold">${data.order_num}</span>) والمؤرخ في (<span class="font-bold">${data.order_date}</span>) لغرض التحاقه بالعمل لدى (<span class="font-extrabold">${data.destination}</span>).
+                    <br><br>
+                    وقد تم تبرية ذمته من كافة متعلقات وتجهيزات المدرسة... يرجى التفضل بالاطلاع مع التقدير.
+                `
+            },
+            taeed_grades: {
+                title: "تأييد استمرار وشهادة درجات طالب",
+                target: "إلى / من يهمه الأمر",
+                hasTable: true,
+                fields: [
+                    { id: "dept", label: "اسم مديرية التربية", default: "المديرية العامة لتربية المحافظة" },
+                    { id: "school", label: "اسم المدرسة", default: "ثانوية الأمل للمتفوقين" },
+                    { id: "num", label: "العدد", default: "ت/902" },
+                    { id: "date", label: "التاريخ", default: "2026-05-15" },
+                    { id: "student_name", label: "اسم الطالب الثلاثي", default: "يوسف علي أحمد" },
+                    { id: "grade", label: "الصف والفرع", default: "الثالث المتوسط" },
+                    { id: "year", label: "العام الدراسي", default: "2025 - 2026" },
+                    { id: "average", label: "المعدل العام للطالب", default: "91.25%" },
+                    { id: "result", label: "النتيجة النهائية", default: "ناجح بالدور الأول" },
+                    { id: "sign_name", label: "اسم مدير المدرسة", default: "أ. أحمد الفاضل" }
+                ],
+                bodyBuilder: (data) => `
+                    تؤيد إدارة <span class="font-extrabold">${data.school}</span> بأن الطالب (<span class="font-extrabold border-b border-black">${data.student_name}</span>) هو أحد طلبة الصف (<span class="font-extrabold">${data.grade}</span>) للعام الدراسي (<span class="font-bold">${data.year}</span>)، وقد كانت درجاته السنوية الامتحانية موثقة ومدرجة أدناه:
+                    <br>
+                    معدله العام هو: <span class="font-extrabold border-b border-black">${data.average}</span> | النتيجة: <span class="font-extrabold">${data.result}</span>.
+                `
+            },
+            seha: {
+                title: "كتاب صحة صدور وثيقة / شهادة",
+                target: "إلى / المديرية العامة لتربية المحافظة - قسم الامتحانات",
+                hasTable: false,
+                fields: [
+                    { id: "dept", label: "اسم مديرية التربية", default: "المديرية العامة لتربية المحافظة" },
+                    { id: "school", label: "اسم المدرسة", default: "ثانوية الأمل للمتفوقين" },
+                    { id: "num", label: "العدد", default: "ص/987" },
+                    { id: "date", label: "التاريخ", default: "2026-05-15" },
+                    { id: "doc_num", label: "رقم الوثيقة/الشهادة المراد فحصها", default: "و/1204" },
+                    { id: "doc_date", label: "تاريخ الوثيقة", default: "2025-06-20" },
+                    { id: "student_name", label: "اسم الطالب صاحب الوثيقة", default: "مصطفى حسن حسين" },
+                    { id: "sign_name", label: "اسم مدير المدرسة", default: "أ. أحمد الفاضل" }
+                ],
+                bodyBuilder: (data) => `
+                    إشارة إلى كتابكم ذي العدد (<span class="font-bold">${data.doc_num}</span>) والمؤرخ في (<span class="font-bold">${data.doc_date}</span>) الخاص بطلب بيان صحة صدور الوثيقة الخاصة بالطالب (<span class="font-extrabold border-b border-black">${data.student_name}</span>).
+                    <br><br>
+                    نود أن نبيّن لكم بعد الرجوع إلى السجلات الرسمية الأساسية للمدرسة، <strong>نؤيد لكم صحة صدور الوثيقة المذكورة أعلاه</strong> وأن البيانات الواردة فيها مطابقة تماماً لسجلاتنا الحفظية.
+                `
+            },
+            shukr: {
+                title: "كتاب شكر وتقدير",
+                target: "إلى / أ. علي حسين عبد (مدرس اللغة الانكليزية)",
+                hasTable: false,
+                fields: [
+                    { id: "dept", label: "اسم مديرية التربية", default: "المديرية العامة لتربية المحافظة" },
+                    { id: "school", label: "اسم المدرسة", default: "ثانوية الأمل للمتفوقين" },
+                    { id: "num", label: "العدد", default: "ش/301" },
+                    { id: "date", label: "التاريخ", default: "2026-05-15" },
+                    { id: "target_person", label: "الموجه إليه الشكر", default: "أ. علي حسين عبد (مدرس اللغة الانكليزية)" },
+                    { id: "reason", label: "سبب تقديم الشكر", default: "جهوده المتميزة في إنجاح الامتحانات والتزامه العالي بالواجبات" },
+                    { id: "sign_name", label: "اسم مدير المدرسة", default: "أ. أحمد الفاضل" }
+                ],
+                bodyBuilder: (data) => `
+                    نظراً لـ (<span class="font-extrabold">${data.reason}</span>) وأدائكم الوظيفي والتربوي العالي في خدمة أبنائنا الطلبة والمؤسسة التعليمية.
+                    <br><br>
+                    يسر إدارة المدرسة أن تثمن هذه الجهود الكبيرة وتقدم لكم <strong>كتاب الشكر والتقدير هذا</strong>، آملين منكم بذل المزيد من العطاء والارتقاء بالعمل التربوي... مع التوفيق والامتنان.
+                `
+            },
+            inthan: {
+                title: "استدعاء ولي أمر / إنذار غيابات",
+                target: "إلى / ولي أمر الطالب المحترم",
+                hasTable: false,
+                fields: [
+                    { id: "dept", label: "اسم مديرية التربية", default: "المديرية العامة لتربية المحافظة" },
+                    { id: "school", label: "اسم المدرسة", default: "ثانوية الأمل للمتفوقين" },
+                    { id: "num", label: "العدد", default: "إن/55" },
+                    { id: "date", label: "التاريخ", default: "2026-05-15" },
+                    { id: "student_name", label: "اسم الطالب", default: "عبد الرحمن جاسم" },
+                    { id: "grade", label: "الصف", default: "الثاني المتوسط" },
+                    { id: "days", label: "عدد أيام الغياب", default: "7 أيام متتالية" },
+                    { id: "sign_name", label: "اسم مدير المدرسة", default: "أ. أحمد الفاضل" }
+                ],
+                bodyBuilder: (data) => `
+                    نود إعلامكم بضرورة الحضور إلى إدارة المدرسة بأسرع وقت ممكن لمراجعة ولي أمر الطالب (<span class="font-extrabold border-b border-black">${data.student_name}</span>) المقيد في الصف (<span class="font-bold">${data.grade}</span>)، وذلك بسبب تجاوز غياباته الرسمية (<span class="font-extrabold text-rose-700">${data.days}</span>) دون عذر مشروع.
+                    <br><br>
+                    يرجى الحضور لتدارك الأمر وتجنب اتخاذ العقوبات والإنذارات الانضباطية بحقه وفق الأنظمة المدرسية.
+                `
+            },
+            amr_edari: {
+                title: "أمر إداري مدرسي",
+                target: "إلى / أعضاء اللجنة المحددين أدناه",
+                hasTable: true,
+                fields: [
+                    { id: "dept", label: "اسم مديرية التربية", default: "المديرية العامة لتربية المحافظة" },
+                    { id: "school", label: "اسم المدرسة", default: "ثانوية الأمل للمتفوقين" },
+                    { id: "num", label: "أمر إداري رقم", default: "41" },
+                    { id: "date", label: "التاريخ", default: "2026-05-15" },
+                    { id: "subject_title", label: "موضوع الأمر الإداري", default: "تشكيل اللجنة الامتحانية للعام الدراسي 2025-2026" },
+                    { id: "sign_name", label: "اسم مدير المدرسة", default: "أ. أحمد الفاضل" }
+                ],
+                bodyBuilder: (data) => `
+                    استناداً إلى الصلاحيات المخولة لنا ولمقتضيات مصلحة العمل المدرسي والتعليمي، <strong>تقرر ما يلي:</strong>
+                    <br>
+                    تشكيل (<span class="font-extrabold">${data.subject_title}</span>) برئاسة وعضوية الكوادر المدرجة أسماؤهم وتكليفاتهم في الجدول أدناه، وتنفيذ المهام الموكلة إليهم اعتباراً من تاريخه:
+                `
+            },
+            general_letter: {
+                title: "كتاب مخاطبة إدارية عامة",
+                target: "إلى / المديرية العامة لتربية المحافظة / قسم الإشراف التربوي",
+                hasTable: false,
+                fields: [
+                    { id: "dept", label: "اسم مديرية التربية", default: "المديرية العامة لتربية المحافظة" },
+                    { id: "school", label: "اسم المدرسة", default: "ثانوية الأمل للمتفوقين" },
+                    { id: "num", label: "العدد", default: "771 / 2026" },
+                    { id: "date", label: "التاريخ", default: "2026-05-15" },
+                    { id: "subject", label: "موضوع الكتاب الرسمي", default: "م/ حاجة المدرسة إلى الكوادر التدريسية" },
+                    { id: "details", label: "تفاصيل ونطاق المخاطبة", default: "نحيطكم علماً بنقص الكوادر في اختصاصي الفيزياء والرياضيات لمرحلة الصف السادس الإعدادي..." },
+                    { id: "sign_name", label: "اسم مدير المدرسة", default: "أ. أحمد الفاضل" }
+                ],
+                bodyBuilder: (data) => `
+                    <strong>${data.subject}</strong>
+                    <br><br>
+                    ${data.details}
+                    <br><br>
+                    يرجى التفضل بالاطلاع والموافقة على سد النقص بأسرع وقت ممكن... مع التقدير والاحترام.
+                `
+            }
+        };
+
+        function loadOfficialTemplate() {
+            const templateKey = document.getElementById('off-template').value;
+            const config = officialTemplates[templateKey];
+            const formContainer = document.getElementById('official-form-fields');
+            
+            formContainer.innerHTML = '';
+
+            config.fields.forEach(field => {
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = `
+                    <label class="block text-xs text-slate-400 mb-1">${field.label}</label>
+                    <div class="relative">
+                        <input type="text" id="off_field_${field.id}" value="${field.default}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-emerald-500 pl-8 text-xs">
+                        <button type="button" onclick="startVoiceFor('off_field_${field.id}', '${field.label}')" class="absolute left-2 top-2 text-slate-400 hover:text-emerald-400 text-xs" title="إدخال صوتي"><i class="fa-solid fa-microphone"></i></button>
+                    </div>
+                `;
+                formContainer.appendChild(wrapper);
+            });
+
+            // Bind inputs in dynamic fields
+            config.fields.forEach(field => {
+                const input = document.getElementById(`off_field_${field.id}`);
+                if (input) {
+                    input.addEventListener('input', renderOfficialDoc);
+                }
+            });
+
+            // Set default table check status based on template configuration
+            const tableCheck = document.getElementById('off-enable-table');
+            tableCheck.checked = config.hasTable;
+            toggleOfficialTable();
+
+            renderOfficialDoc();
+        }
+
+        function toggleOfficialTable() {
+            const isEnabled = document.getElementById('off-enable-table').checked;
+            const controls = document.getElementById('off-table-controls');
+            const previewContainer = document.getElementById('pv-off-table-container');
+
+            if (isEnabled) {
+                controls.classList.remove('hidden');
+                previewContainer.classList.remove('hidden');
+                renderTableEditor();
+                renderTablePreview();
+            } else {
+                controls.classList.add('hidden');
+                previewContainer.classList.add('hidden');
+            }
+        }
+
+        function renderTableEditor() {
+            const editor = document.getElementById('off-table-editor');
+            editor.innerHTML = '';
+
+            // Header Row
+            const thead = document.createElement('thead');
+            let trH = '<tr class="bg-slate-800">';
+            tableData.headers.forEach((h, colIdx) => {
+                trH += `
+                    <th class="p-1 border border-slate-700">
+                        <input type="text" value="${h}" oninput="updateTableHead(${colIdx}, this.value)" class="w-full bg-slate-900 text-emerald-300 font-bold text-center border border-slate-700 rounded py-0.5 text-xs">
+                    </th>
+                `;
+            });
+            trH += '</tr>';
+            thead.innerHTML = trH;
+            editor.appendChild(thead);
+
+            // Body Rows
+            const tbody = document.createElement('tbody');
+            tableData.rows.forEach((r, rowIdx) => {
+                let trB = '<tr>';
+                r.forEach((cell, colIdx) => {
+                    trB += `
+                        <td class="p-1 border border-slate-700">
+                            <input type="text" value="${cell}" oninput="updateTableCell(${rowIdx}, ${colIdx}, this.value)" class="w-full bg-slate-900 text-white text-center border border-slate-800 rounded py-0.5 text-xs">
+                        </td>
+                    `;
+                });
+                trB += '</tr>';
+                tbody.innerHTML += trB;
+            });
+            editor.appendChild(tbody);
+        }
+
+        function renderTablePreview() {
+            const table = document.getElementById('pv-off-table');
+            table.innerHTML = '';
+
+            // Header Row
+            const thead = document.createElement('thead');
+            let trH = '<tr class="bg-slate-100 border-b-2 border-black">';
+            tableData.headers.forEach(h => {
+                trH += `<th class="p-2 border border-black">${h}</th>`;
+            });
+            trH += '</tr>';
+            thead.innerHTML = trH;
+            table.appendChild(thead);
+
+            // Body Rows
+            const tbody = document.createElement('tbody');
+            tableData.rows.forEach(r => {
+                let trB = '<tr>';
+                r.forEach(cell => {
+                    trB += `<td class="p-2 border border-black">${cell}</td>`;
+                });
+                trB += '</tr>';
+                tbody.innerHTML += trB;
+            });
+            table.appendChild(tbody);
+        }
+
+        function updateTableHead(colIdx, val) {
+            tableData.headers[colIdx] = val;
+            renderTablePreview();
+        }
+
+        function updateTableCell(rowIdx, colIdx, val) {
+            tableData.rows[rowIdx][colIdx] = val;
+            renderTablePreview();
+        }
+
+        function addOfficialTableRow() {
+            const newRow = new Array(tableData.headers.length).fill("نص جديد");
+            tableData.rows.push(newRow);
+            renderTableEditor();
+            renderTablePreview();
+        }
+
+        function addOfficialTableCol() {
+            tableData.headers.push(`عمود ${tableData.headers.length + 1}`);
+            tableData.rows.forEach(r => r.push("ـ"));
+            renderTableEditor();
+            renderTablePreview();
+        }
+
+        function resetOfficialTable() {
+            tableData = {
+                headers: ["ت", "الاسم / المادة", "الدرجة / الصفة", "الملاحظات"],
+                rows: [
+                    ["1", "بيان الأول", "ممتاز", "ملاحظة 1"],
+                    ["2", "بيان الثاني", "جيد جداً", "ملاحظة 2"]
+                ]
+            };
+            renderTableEditor();
+            renderTablePreview();
+        }
+
+        function renderOfficialDoc() {
+            const templateKey = document.getElementById('off-template').value;
+            const config = officialTemplates[templateKey];
+            
+            const formData = {};
+            config.fields.forEach(field => {
+                const el = document.getElementById(`off_field_${field.id}`);
+                formData[field.id] = el ? el.value : field.default;
+            });
+
+            document.getElementById('pv-off-title').innerText = config.title;
+            document.getElementById('pv-off-target').innerText = config.target || formData.target_person || 'من يهمه الأمر';
+            document.getElementById('pv-off-dept').innerText = formData.dept || '';
+            document.getElementById('pv-off-school-name').innerText = formData.school || '';
+            document.getElementById('pv-off-num').innerText = formData.num || '';
+            document.getElementById('pv-off-date').innerText = formData.date || '';
+            document.getElementById('pv-off-sign-name').innerText = formData.sign_name || '';
+
+            document.getElementById('pv-off-body').innerHTML = config.bodyBuilder(formData);
+        }
+
+        // ==========================================
+        // INITIALIZATION AND EVENT LISTENERS BINDING
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', () => {
+            // Tab Switchers
+            document.getElementById('tab-exam-btn').addEventListener('click', () => switchTab('exam'));
+            document.getElementById('tab-official-btn').addEventListener('click', () => switchTab('official'));
+
+            // Math toolbar buttons click listener
+            document.querySelectorAll('.btn-math-sym').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const sym = e.currentTarget.getAttribute('data-symbol');
+                    insertMathSymbol(sym);
+                });
+            });
+
+            // Exam Header inputs
+            ['ex-school', 'ex-subject', 'ex-grade', 'ex-type', 'ex-year', 'ex-time', 'ex-note'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', renderExam);
+                    el.addEventListener('change', renderExam);
+                }
+            });
+
+            // Add Question Button
+            document.getElementById('add-q-btn').addEventListener('click', addQuestion);
+
+            // Cancel Voice
+            document.getElementById('stop-voice-btn').addEventListener('click', stopVoiceRecognition);
+
+            // Official Selectors
+            document.getElementById('off-template').addEventListener('change', loadOfficialTemplate);
+            document.getElementById('off-enable-table').addEventListener('change', toggleOfficialTable);
+
+            // Table Controls
+            document.getElementById('btn-add-table-row').addEventListener('click', addOfficialTableRow);
+            document.getElementById('btn-add-table-col').addEventListener('click', addOfficialTableCol);
+            document.getElementById('btn-reset-table').addEventListener('click', resetOfficialTable);
+
+            // Initial Renders
+            renderQuestionsEditList();
+            renderExam();
+            loadOfficialTemplate();
+        });
+    </script>
+</body>
+</html>
